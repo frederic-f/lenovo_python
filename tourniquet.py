@@ -117,13 +117,13 @@ class Tourniquet(object):
 
                 # is there a complete answer?
                 if "!ENDMSG" in buffer:
-                    # count if all requests have been fullfilled
                     nb_of_answers += 1
 
                 data += buffer
 
                 print("{} answers received.".format(nb_of_answers))
 
+                # count if all requests have been fulfilled
                 if nb_of_answers == len(self.reqs):
                     print("All reqs answered. Exiting loop")
                     stay_in_loop = False
