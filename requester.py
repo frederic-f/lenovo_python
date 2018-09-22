@@ -22,7 +22,7 @@ class Requester(object):
 
     def new_function(self):
 
-        pass
+        return
 
     def request(self):
         """Connects to the server, sends the reqs, read the answer"""
