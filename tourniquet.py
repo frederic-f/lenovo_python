@@ -89,11 +89,12 @@ class Tourniquet(object):
         return
 
     def run(self):
-        """Tells the requesters to send their requests, collects the data, cleans it and returns it"""
+        """Tells the requesters to send their requests ; then collects the data, cleans it and returns it"""
 
         socks = []
 
         # tells the requesters to send their requests
+        # and grab their socks
         for requester in self.requesters:
             try:
                 threading.Thread(target=requester.request()).start()
