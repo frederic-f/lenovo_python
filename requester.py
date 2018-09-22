@@ -20,6 +20,8 @@ class Requester(object):
         """Sets the requets to send to server"""
         self.requests = requests
 
+    def new_function(self):
+
     def request(self):
         """Connects to the server, sends the reqs, read the answer"""
 
