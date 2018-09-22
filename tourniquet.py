@@ -1,14 +1,21 @@
+import select, threading
+
 from requester import Requester
 
 
 class Tourniquet(object):
 
-    def __init__(self, reqs):
+    def __init__(self, reqs, nb_requesters=15):
         """Initiliazes the Tourniquester..."""
 
+        # conditions de creation
+        if not reqs:
+            print("[-] At least one request must be passed to Tourniquet ")
+            sys.exit()
+
         # setting the landscape
-        self.reqs_from_client = reqs
-        self.nb_requesters = 10
+        self.reqs = reqs
+        self.nb_requesters = nb_requesters
 
         print("[*] Creating {} requesters...".format(self.nb_requesters))
         self.requesters = self._create_requesters(self.nb_requesters)
@@ -19,7 +26,7 @@ class Tourniquet(object):
 
         self._list_reqs_assigned(self.requesters)
 
-        self._assign_reqs_to_requesters(self.reqs_from_client, self.requesters)
+        self._assign_reqs_to_requesters(self.reqs, self.requesters)
 
         self._list_reqs_assigned(self.requesters)
 
@@ -58,7 +65,7 @@ class Tourniquet(object):
         for requester_index, requester in enumerate(requesters):
             # with / we get the minimum number of request per socket
             # ex: 5 req, mini=0, max=1 ex: 17 reqs, mini=1, max=2
-            # with # we get if index of said socket get an extra req
+            # with % we get if index of said socket get an extra req
             # ex: 16 reqs, first socket will get an extra req (16%15=1)
 
             nb_reqs_to_send = mini_nb_reqs_per_socket
@@ -82,4 +89,61 @@ class Tourniquet(object):
         return
 
     def run(self):
-        """Tells the requesters to send their requests, collects, cleans and returns the data"""
+        """Tells the requesters to send their requests, collects the data, cleans it and returns it"""
+
+        socks = []
+
+        # tells the requesters to send their requests
+        for requester in self.requesters:
+            try:
+                threading.Thread(target=requester.request()).start()
+                socks.append(requester.sock)
+            except Exception as e:
+                print("[-] Thread could not be started: {}".format(str(e)))
+
+        data = ""
+        nb_of_answers = 0
+
+        # collects the data from requesters
+        # read from sockets that are available
+        stay_in_loop = True
+        while stay_in_loop:
+            # this will block until at least one socket is ready
+            ready_socks, _, _ = select.select(socks, [], [])
+            for sock in ready_socks:
+                buffer, addr = sock.recvfrom(1024)  # This is will not block
+                print("received message: {}".format(buffer))
+
+                # is there a complete answer?
+                if "!ENDMSG" in buffer:
+                    # count if all requests have been fullfilled
+                    nb_of_answers += 1
+
+                data += buffer
+
+                print("{} answers received.".format(nb_of_answers))
+
+                if nb_of_answers == len(self.reqs):
+                    print("All reqs answered. Exiting loop")
+                    stay_in_loop = False
+
+            print("Looping again...\n")
+        print("Exited from loop")
+        print("[+] Data collected")
+        #print data
+        
+        return self._process_data_to_return(data)
+
+    def _process_data_to_return(self, data_to_process):
+
+        print("[*] Cleaning data...")
+
+        #print(data_to_process)
+
+        data = ""
+
+        for line in data_to_process.splitlines():
+            if "!ENDMSG!" not in line:
+                data += line + "\n"
+
+        return data

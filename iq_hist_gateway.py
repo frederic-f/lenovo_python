@@ -47,7 +47,7 @@ if __name__ == "__main__":
 
     #host = socket.gethostname()
     host = "LENOVO"
-    port = 1234
+    port = 1235
     serversocket.bind((host, port))
 
     # become a server socket
@@ -80,26 +80,20 @@ if __name__ == "__main__":
 
             tourniquet = Tourniquet(reqs)
 
+            data = tourniquet.run()
+
             #########################
 
-            sys.exit()
-
-            #data = make_iqfeed_req(reqs)
+             #data = make_iqfeed_req(reqs)
 
             data += "\n!ENDMSG!"
 
             print "\nAnswer to scanner\n"
             print data
 
-            message = "This is an answer from iq_hist_gateway"
-            message += "!ENDMSG!"
-
             clientsocket.sendall(data)
 
         finally:
             clientsocket.close()
-
-
-        sys.exit()
 
     sys.exit()
