@@ -1,29 +1,18 @@
 import sys
 import socket
-import pickle
 
 from tourniquet import Tourniquet
 
 
-def read_data_socket_scanner (sock, recv_buffer=4096):
-    """
-    Read the informatio from the socket, in a buffered fashion, receiving only 4096 bytes at a time
-    :param sock: the socket object
-    :param recv_buffer: amount in bytes to receive per read
-    :return: a string of received data
-    """
+def read_data_scanner (sock, recv_buffer=4096):
 
     data = ""
-    chunks = []
+    chunk = ""
 
-    while True:
+    while "!ENDMSG!" not in chunk:
         # communication is in bytes -> so we decode
         chunk = sock.recv(4096).decode()
         data += chunk
-
-        # check if the end message string arrives
-        if "!ENDMSG!" in chunk:
-            break
 
     # remove the end message string
     data = data[:-8]
@@ -58,8 +47,7 @@ if __name__ == "__main__":
     while (1):
         print("\n[*] Waiting for connection on ('{host}',{port})...".format(host=host, port=port))
 
-        # accept returns an open connection between server and client, along with address of client
-        # connection
+        # connection with Scanner
         (clientsocket, client_address) = serversocket.accept()
 
         try:
@@ -68,12 +56,11 @@ if __name__ == "__main__":
 
             print("\n[*] Receiving requests list")
 
-            req = read_data_socket_scanner(clientsocket)
+            req = read_data_scanner(clientsocket)
 
-            #reqs = pickle.loads(req)
             reqs = req.split("!SEP!")
 
-            print("[+] List of requests received\n")
+            print("[+] List of requests received:\n")
 
             print(reqs)
 
@@ -87,8 +74,7 @@ if __name__ == "__main__":
 
             #########################
 
-             #data = make_iqfeed_req(reqs)
-
+            # forward to scanner
             data += "\n!ENDMSG!"
 
             print("\nAnswer to scanner\n")
@@ -98,5 +84,6 @@ if __name__ == "__main__":
 
         finally:
             clientsocket.close()
+
 
     sys.exit()
