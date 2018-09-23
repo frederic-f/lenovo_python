@@ -1,4 +1,5 @@
-import select, threading
+import select
+import threading
 
 from requester import Requester
 
