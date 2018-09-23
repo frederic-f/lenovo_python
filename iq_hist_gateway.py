@@ -14,29 +14,31 @@ def read_data_socket_scanner (sock, recv_buffer=4096):
     """
 
     data = ""
+    chunks = []
 
     while True:
-        buffer = sock.recv(recv_buffer)
-        data += buffer
+        # communication is in bytes -> so we decode
+        chunk = sock.recv(4096).decode()
+        data += chunk
 
         # check if the end message string arrives
-        if "!ENDMSG!" in buffer:
+        if "!ENDMSG!" in chunk:
             break
 
     # remove the end message string
     data = data[:-8]
+
+    print(data)
 
     return data
 
 
 if __name__ == "__main__":
 
-
-    print "\n\n"
-    print "-------------------------------------------------------------------------------"
-    print "======== HIST GATEWAY V 0.2 ======== "
-    print "-------------------------------------------------------------------------------"
-    print "\n"
+    print("\n\n-------------------------------------------------------------------------------")
+    print("======== HIST GATEWAY V 0.2 ======== ")
+    print("-------------------------------------------------------------------------------")
+    print("\n")
 
     ######################################
     # start SERVER
@@ -45,7 +47,7 @@ if __name__ == "__main__":
     # create an INET, STREAMing socket
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    #host = socket.gethostname()
+    # host = socket.gethostname()
     host = "LENOVO"
     port = 1235
     serversocket.bind((host, port))
@@ -54,7 +56,7 @@ if __name__ == "__main__":
     serversocket.listen(5)
 
     while (1):
-        print "\n[*] Waiting for connection on ('{host}',{port})...".format(host=host, port=port)
+        print("\n[*] Waiting for connection on ('{host}',{port})...".format(host=host, port=port))
 
         # accept returns an open connection between server and client, along with address of client
         # connection
@@ -62,17 +64,18 @@ if __name__ == "__main__":
 
         try:
 
-            print "[+] Accepting connection from {}".format(client_address)
+            print("[+] Accepting connection from {}".format(client_address))
 
             print("\n[*] Receiving requests list")
 
             req = read_data_socket_scanner(clientsocket)
 
-            reqs = pickle.loads(req)
+            #reqs = pickle.loads(req)
+            reqs = req.split("!SEP!")
 
             print("[+] List of requests received\n")
 
-            print reqs
+            print(reqs)
 
             print("\n[*] Tournicotons\n")
 
@@ -88,10 +91,10 @@ if __name__ == "__main__":
 
             data += "\n!ENDMSG!"
 
-            print "\nAnswer to scanner\n"
-            print data
+            print("\nAnswer to scanner\n")
+            print(data)
 
-            clientsocket.sendall(data)
+            clientsocket.sendall(data.encode())
 
         finally:
             clientsocket.close()

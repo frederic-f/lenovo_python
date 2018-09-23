@@ -28,38 +28,7 @@ class Requester(object):
 
         return self.requests
 
-    def read_data_socket_iqfeed(self,recv_buffer=4096):
-
-        data = ""
-        nb_answers_recvd = 0  # to check that nb_answers_recvd matches nb_requests_sent
-
-        while True:
-            buffer = self.sock.recv(recv_buffer)
-            data += buffer
-
-            print("Reading buffer: {}...".format(buffer[:20]))
-
-            # check if the end message string arrives
-            if "!ENDMSG!" in buffer:
-                nb_answers_recvd += 1
-
-                if nb_answers_recvd == self.nb_requests:
-                    break
-
-        # Cleaning data
-        # remove lines with !ENDMSG!
-        data_lines = data.split('\n')
-        data_clean = []
-
-        for line in data_lines:
-            if "!ENDMSG!" not in line:
-                data_clean.append(line)
-
-        data_to_return = '\n'.join(data_clean)
-
-        return data_to_return
-
-    def request(self):
+    def run(self):
         """Connects to the server, sends the reqs, read the answer"""
 
         print("[+] Requester {} running".format(self.sock.fileno()))
@@ -68,7 +37,7 @@ class Requester(object):
 
         req = "".join(self.requests)
 
-        self.sock.sendall(req)
+        self.sock.sendall(req.encode())
 
         #for request in self.requests:
         #   self.sock.sendall(request)

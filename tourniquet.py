@@ -60,7 +60,7 @@ class Tourniquet(object):
         # for each socket
         # assign requests to send
         # send requests
-        mini_nb_reqs_per_socket = len(reqs) / len(requesters)
+        mini_nb_reqs_per_socket = len(reqs) // len(requesters)
         nb_reqs_supplementaires = len(reqs) % len(requesters)
 
         for requester_index, requester in enumerate(requesters):
@@ -82,12 +82,29 @@ class Tourniquet(object):
 
             end_index = start_index + nb_reqs_to_send
 
+            print("Rquester #{RQSTR} get {REQCOUNT} requests: [{START}:{END}]"
+                  .format(RQSTR=requester_index,REQCOUNT=nb_reqs_to_send,START=start_index,END=end_index))
+
             # give requester the reqs to execute
             requester.set_requests(reqs[start_index:end_index])
 
             # TODO make sure the number of requests sents matahes number requests to be sent and answers recvd
 
         return
+
+    def _process_data_to_return(self, data_to_process):
+
+        print("[*] Cleaning data...")
+
+        data = ""
+
+        for line in data_to_process.splitlines():
+            if "!ENDMSG!" not in line:
+                data += line + "\n"
+
+        print("[+] Data clean")
+
+        return data
 
     def run(self):
         """Tells the requesters to send their requests ; then collects the data, cleans it and returns it"""
@@ -98,7 +115,7 @@ class Tourniquet(object):
         # and grab their socks
         for requester in self.requesters:
             try:
-                threading.Thread(target=requester.request()).start()
+                threading.Thread(target=requester.run()).start()
                 socks.append(requester.sock)
             except Exception as e:
                 print("[-] Thread could not be started: {}".format(str(e)))
@@ -113,39 +130,25 @@ class Tourniquet(object):
             # this will block until at least one socket is ready
             ready_socks, _, _ = select.select(socks, [], [])
             for sock in ready_socks:
-                buffer, addr = sock.recvfrom(1024)  # This is will not block
+                buffer = sock.recv(1024).decode()  # This is will not block
+                #buffer, addr = sock.recvfrom(1024).decode()  # This is will not block
                 print("received message: {}".format(buffer))
 
                 # is there a complete answer?
                 if "!ENDMSG" in buffer:
                     nb_of_answers += 1
+                    print("{} answers received.".format(nb_of_answers))
 
                 data += buffer
-
-                print("{} answers received.".format(nb_of_answers))
 
                 # count if all requests have been fulfilled
                 if nb_of_answers == len(self.reqs):
                     print("All reqs answered. Exiting loop")
                     stay_in_loop = False
 
-            print("Looping again...\n")
         print("Exited from loop")
-        print("[+] Data collected")
-        #print data
-        
-        return self._process_data_to_return(data)
+        print("[+] Data collected by Tourniquet")
 
-    def _process_data_to_return(self, data_to_process):
-
-        print("[*] Cleaning data...")
-
-        #print(data_to_process)
-
-        data = ""
-
-        for line in data_to_process.splitlines():
-            if "!ENDMSG!" not in line:
-                data += line + "\n"
+        data = self._process_data_to_return(data)
 
         return data
