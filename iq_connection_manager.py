@@ -30,10 +30,10 @@ def connectToHistPort():
 
     sym = "AMZN"
 
-    print "Downloading symbol: %s..." % sym
+    print("Downloading symbol: {}...".format(sym))
 
     # Construct the message needed by IQFeed to retrieve data
-    message = "HIT,%s,300,20180720 075000,,,155500,160000,1\n" % sym
+    message = "HIT,{},300,20180720 075000,,,155500,160000,1\n".format(sym)
 
     # define (iqfeed client) server host, port and symbols to download
     host = "127.0.0.1"
@@ -54,30 +54,26 @@ def connectToHistPort():
     data = data.replace(",\n", "\n")[:-1]
 
     # return data stream
-    print data
+    print(data)
 
-
-def initializeFeed():
-
-    pass
 
 
 def connect():
 
-    print "Initializing feed..."
+    print("Initializing feed...")
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(("127.0.0.1", 9300))
 
     message = "S,CONNECT\n"
 
-    sock.sendall(message)
+    sock.sendall(message.encode())
     
     while True:
 
-        data = sock.recv(4096)
+        data = sock.recv(4096).decode()
 
-        print data
+        print(data)
 
         # check if the end message string arrives
         if ",Connected," in data:
@@ -87,21 +83,20 @@ def connect():
 
 
 def disconnect():
-    print
-    "Initializing feed..."
+    print("Initializing feed...")
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect(("127.0.0.1", 9300))
 
     message = "S,DISCONNECT\n"
 
-    sock.sendall(message)
+    sock.sendall(message.encode())
 
     while True:
 
-        data = sock.recv(4096)
+        data = sock.recv(4096).decode()
 
-        print data
+        print(data)
 
         # check if the end message string arrives
         if ",Not Connected," in data:
@@ -112,7 +107,7 @@ def disconnect():
 
 def stats():
 
-    print "Getting stats..."
+    print("Getting stats...")
 
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -120,17 +115,17 @@ def stats():
 
     message = "S,REQUEST STATS\n"
 
-    sock.sendall(message)
-    answer = sock.recv(4096)
+    sock.sendall(message.encode)
+    answer = sock.recv(4096).decode()
 
     sock.close()
 
-    print answer
+    print(answer)
 
 
 def reqCurrentFieldnames():
 
-    print "Getting current Update Fieldnames..."
+    print("Getting current Update Fieldnames...")
 
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -138,14 +133,14 @@ def reqCurrentFieldnames():
 
     message = "S,REQUEST FUNDAMENTAL FIELDNAMES\n"
 
-    sock.sendall(message)
+    sock.sendall(message.encode)
 
 
     while True:
 
-        data = sock.recv(4096)
+        data = sock.recv(4096).decode()
 
-        print data
+        print(data)
 
         buffer += data
 
@@ -161,7 +156,7 @@ def reqCurrentFieldnames():
     # remove the end message string
     # buffer = buffer[:-12]
 
-    print buffer
+    print(buffer)
 
     sock.close()
 
