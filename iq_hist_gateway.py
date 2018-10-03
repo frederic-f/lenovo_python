@@ -37,7 +37,7 @@ if __name__ == "__main__":
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     # host = socket.gethostname()
-    host = "LENOVO"
+    host = "localhost"
     port = 1235
     serversocket.bind((host, port))
 
