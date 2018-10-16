@@ -75,7 +75,7 @@ if __name__ == "__main__":
             #########################
 
             # forward to scanner
-            data += "\n!ENDMSG!"
+            data += "!ENDMSG!"
 
             print("\nAnswer to scanner\n")
             print(data)

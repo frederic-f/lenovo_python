@@ -16,7 +16,11 @@ class Tourniquet(object):
 
         # setting the landscape
         self.reqs = reqs
-        self.nb_requesters = nb_requesters
+
+        if self.reqs < 15:
+            self.nb_requesters = self.reqs
+        else:
+            self.nb_requesters = nb_requesters
 
         print("[*] Creating {} requesters...".format(self.nb_requesters))
         self.requesters = self._create_requesters(self.nb_requesters)
@@ -135,7 +139,7 @@ class Tourniquet(object):
                 print("received message: {}".format(buffer))
 
                 # is there a complete answer?
-                if "!ENDMSG" in buffer:
+                if "!ENDMSG!" in buffer:
                     nb_of_answers += 1
                     print("{} answers received.".format(nb_of_answers))
 
