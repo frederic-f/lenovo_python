@@ -17,8 +17,8 @@ class Tourniquet(object):
         # setting the landscape
         self.reqs = reqs
 
-        if self.reqs < 15:
-            self.nb_requesters = self.reqs
+        if len(self.reqs) < 15:
+            self.nb_requesters = len(self.reqs)
         else:
             self.nb_requesters = nb_requesters
 
@@ -138,6 +138,21 @@ class Tourniquet(object):
                 #buffer, addr = sock.recvfrom(1024).decode()  # This is will not block
                 print("received message: {}".format(buffer))
 
+                data += buffer
+
+                # we dont count the !ENDMSG! in the buffer because !ENDMSG! can be
+                # split across two buffers
+                # counting number of !ENDMSG! in data
+
+                num_endmsg = data.count('!ENDMSG!')
+                print("{} answers received.".format(num_endmsg))
+
+                # count if all requests have been fulfilled
+                if num_endmsg == len(self.reqs):
+                    print("All reqs answered. Exiting loop")
+                    stay_in_loop = False
+
+                """
                 # is there a complete answer?
                 if "!ENDMSG!" in buffer:
                     nb_of_answers += 1
@@ -149,6 +164,7 @@ class Tourniquet(object):
                 if nb_of_answers == len(self.reqs):
                     print("All reqs answered. Exiting loop")
                     stay_in_loop = False
+                """
 
         print("Exited from loop")
         print("[+] Data collected by Tourniquet")
